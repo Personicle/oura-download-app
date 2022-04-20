@@ -7,6 +7,13 @@
       "direction": "in",
       "queueName": "oura-download-requests",
       "connection": "personicle_STORAGE"
+    },
+    {
+      "type": "eventHub",
+      "name": "eventsTopic",
+      "eventHubName": "testhub-new",
+      "connection": "EventHubConnection",
+      "direction": "out"
     }
   ]
 }
