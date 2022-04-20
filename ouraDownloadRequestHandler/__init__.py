@@ -26,15 +26,15 @@ async def main(msg: func.QueueMessage, eventsTopic: func.Out[List[str]]) -> None
         # logging.info(str(readiness_sessions))
         logging.info(sleep_status)
         # logging.info(readiness_status)
-       
-        if sleep_status:
+        datastream_status, datastream_response = oura_datastreams_imports(request_message["individual_id"], request_message["service_access_token"], request_message['last_accessed_at'],eventsTopic)
+        logging.info(datastream_status)
+        if sleep_status or datastream_status:
             await database.connect()
             update_query = users.update().where((users.c.userId == request_message['individual_id']) & (users.c.service == "oura")).values(last_accessed_at = datetime.datetime.now())
             await database.execute(update_query)
             await database.disconnect()
        
-        # datastream_response = oura_datastreams_imports(request_message["individual_id"], request_message["service_access_token"], request_message['last_accessed_at'], datastreamTaskQueue)
-
+    
     except AssertionError as e:
         logging.error("Missing parameter in data download request")
         logging.error(e)

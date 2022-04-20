@@ -2,7 +2,7 @@ import json
 import os
 import traceback
 
-from producer import send_records_azure
+from producer import send_records_azure,send_datastreams_to_azure
 from .utils.oura_parsers import *
 from logging import getLogger
 
@@ -27,6 +27,19 @@ TOPIC_MAPPING = {
     'activity': 'testhub-new',
     'sleep': 'testhub-new'
 }
+def send_datastream_to_personicle(personicle_user_id, records, stream_name, data_type, events_topic, limit = None):
+    count = 0
+    record_formatter = RECORD_PROCESSING[f"{stream_name}_{data_type}"]
+    formatted_records = record_formatter(records, personicle_user_id,data_type)
+    try:
+        send_datastreams_to_azure.datastream_producer(formatted_records)
+
+        # print(formatted_records)
+
+        # return {"success": True, "number_of_records": count}
+    except Exception as e:
+        LOG.error(traceback.format_exc())
+        return {"success": False, "error": e}
 
 def send_records_to_personicle(personicle_user_id, records, stream_name, event_name, events_topic, limit = None):
     count = 0
