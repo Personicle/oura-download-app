@@ -2,7 +2,7 @@ from datetime import datetime
 # import pytz
 import json
 import logging
-
+from .oura_data_mapping import DATA_DICTIONARY
 LOG = logging.getLogger(__name__)
 
 
@@ -59,6 +59,19 @@ def oura_activity_parser_sleep(raw_event, personicle_user_id,event_name):
     })
     return new_event_record
 
-def oura_datastream_parser_heartrate(raw_event, personicle_user_id,event_name):
-    # todo
-    pass
+def oura_datastream_parser_heartrate(raw_records, personicle_user_id,data_type):
+    return_message = {
+        "streamName": DATA_DICTIONARY[data_type],
+        "individual_id": personicle_user_id,
+        "source": "oura",
+        "unit": "bpm",
+        "dataPoints": []
+    }
+
+    for point in raw_records:
+        return_message['dataPoints'].append({
+            "timestamp": point['timestamp'],
+            "value": point['bpm'],
+            "source": point['source']
+        })
+    return return_message
