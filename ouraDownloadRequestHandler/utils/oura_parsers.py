@@ -90,8 +90,12 @@ def oura_datastream_parser(raw_records, personicle_user_id,data_type):
                 "dataPoints": []
             }
         for point in raw_records:
+            if data_type == 'heartrate' or data_type == 'daily_activity':
+                timestamp = point.get('timestamp',None)
+            else:
+                timestamp =  point.get('summary_date',None)
             return_message['dataPoints'].append({
-             "timestamp": point.get('summary_date',None),
+             "timestamp": timestamp,
              metric: point.get(metric,None),
         })
 
