@@ -63,10 +63,8 @@ def oura_activity_import(personicle_user_id, access_token, last_accessed_at, eve
     return request_status, count_sessions
 
 def oura_activity_imports(personicle_user_id, access_token, last_accessed_at, events_topic):
-    # sleep_status, sleep_sessions = oura_activity_import(personicle_user_id, access_token, last_accessed_at, events_topic,"sleep")
-    # return sleep_status, sleep_sessions
-    return False, 0
-
+    sleep_status, sleep_sessions = oura_activity_import(personicle_user_id, access_token, last_accessed_at, events_topic,"sleep")
+    return sleep_status, sleep_sessions
     
     
 def oura_datastream_import(personicle_user_id, access_token, last_accessed_at, events_topic, data_type):
