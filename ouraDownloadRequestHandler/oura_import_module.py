@@ -8,7 +8,8 @@ LOG = logging.getLogger(__name__)
 oura_api_url_mapping = {
     "sleep": os.environ['OURA_API_SLEEP'],
     "readiness": os.environ['OURA_API_READINESS'],
-    "heartrate": os.environ['OURA_API_HEARTRATE']
+    "heartrate": os.environ['OURA_API_HEARTRATE'],
+    "daily_activity": os.environ['OURA_APT_DAILY_ACTIVITY']
 }
 
 def oura_activity_import(personicle_user_id, access_token, last_accessed_at, events_topic,event_name):
@@ -62,18 +63,21 @@ def oura_activity_import(personicle_user_id, access_token, last_accessed_at, eve
     return request_status, count_sessions
 
 def oura_activity_imports(personicle_user_id, access_token, last_accessed_at, events_topic):
-    sleep_status, sleep_sessions = oura_activity_import(personicle_user_id, access_token, last_accessed_at, events_topic,"sleep")
-    # # readiness_status, readiness_sessions = oura_activity_import(personicle_user_id, access_token, last_accessed_at, events_topic,"readiness")
-  
-    return sleep_status, sleep_sessions
+    # sleep_status, sleep_sessions = oura_activity_import(personicle_user_id, access_token, last_accessed_at, events_topic,"sleep")
+    # return sleep_status, sleep_sessions
+    return False, 0
+
+    
     
 def oura_datastream_import(personicle_user_id, access_token, last_accessed_at, events_topic, data_type):
     if last_accessed_at is None:
         start_time = datetime.now().date() - timedelta(days=365)
         end_time = datetime.now().date()
-    else:
+    else: 
         start_time = datetime.strptime(last_accessed_at, "%Y-%m-%d %H:%M:%S.%f")
-        start_time = start_time.date()
+        if data_type == "readiness" or data_type == "daily_activity":
+            start_time = start_time.date() 
+        
         end_time = datetime.now().date()
 
     repeat_token = None
@@ -101,16 +105,15 @@ def oura_datastream_import(personicle_user_id, access_token, last_accessed_at, e
         # user did not grant access to this scope
         if data_response.status_code == 403:
             request_status = False
-            
             return request_status, 0
-
-        res = data_response.json()['data']
-       
+     
+        res = data_response.json()['readiness'] if data_type == "readiness" else  data_response.json()['data']
+      
         if len(res) > 0:
             request_status=True
-            print(len(res))
             send_response = oura_upload.send_datastream_to_personicle(personicle_user_id, res, 'datastream',data_type, events_topic)
             LOG.info(send_response)
+
         repeat_token = data_response.json().get('next_token',None)
         if repeat_token is None:
             call_api = False
@@ -120,5 +123,7 @@ def oura_datastream_import(personicle_user_id, access_token, last_accessed_at, e
 
 def oura_datastreams_imports(personicle_user_id, access_token, last_accessed_at, events_topic):
     heartrate_status, hearate_datapoints = oura_datastream_import(personicle_user_id, access_token, last_accessed_at, events_topic,"heartrate")
-
-    return heartrate_status, hearate_datapoints
+    readiness_status, readiness_endpoints = oura_datastream_import(personicle_user_id, access_token, last_accessed_at, events_topic,"readiness")
+    daily_activity_status, daily_activity_endpoints = oura_datastream_import(personicle_user_id, access_token, last_accessed_at, events_topic,"daily_activity")
+    
+    return heartrate_status, hearate_datapoints, readiness_status, readiness_endpoints,daily_activity_status, daily_activity_endpoints

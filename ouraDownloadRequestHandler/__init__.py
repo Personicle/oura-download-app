@@ -26,14 +26,21 @@ async def main(msg: func.QueueMessage, eventsTopic: func.Out[List[str]]) -> None
         # logging.info(str(readiness_sessions))
         logging.info(sleep_status)
         # logging.info(readiness_status)
-        datastream_status, datastream_response = oura_datastreams_imports(request_message["individual_id"], request_message["service_access_token"], request_message['last_accessed_at'],eventsTopic)
-        logging.info(datastream_status)
-        if sleep_status or datastream_status:
+        heartrate_status, heartrate_datapoints, readiness_status, readiness_datapoints, daily_activity_status, daily_activity_datapoints = oura_datastreams_imports(request_message["individual_id"], request_message["service_access_token"], request_message['last_accessed_at'],eventsTopic)
+        logging.info(f"Heartrate status: {heartrate_status}")
+        logging.info(f"Heartrate datapoints: {heartrate_datapoints}")
+        logging.info(f"Readiness status: {readiness_status}")
+        logging.info(f"Readiness datapoints: {readiness_datapoints}")
+        logging.info(f"Daily activity status: {daily_activity_status}")
+        logging.info(f"Daily activity datapoints: {daily_activity_datapoints}")
+
+        if sleep_status or heartrate_status or readiness_status or daily_activity_status:
             await database.connect()
             update_query = users.update().where((users.c.userId == request_message['individual_id']) & (users.c.service == "oura")).values(last_accessed_at = datetime.datetime.now())
             await database.execute(update_query)
             await database.disconnect()
-       
+        else:
+            logging.info(f"No new activity or datastream available for user {request_message['individual_id']}")   
     
     except AssertionError as e:
         logging.error("Missing parameter in data download request")

@@ -11,7 +11,10 @@ LOG = getLogger(__name__)
 RECORD_PROCESSING = {
     'activity_sleep': oura_activity_parser_sleep,
     # 'activity_readiness': oura_activity_parser_readiness,
-    'datastream_heartrate': oura_datastream_parser_heartrate
+    'datastream': oura_datastream_parser,
+#     'datastream_heartrate': oura_datastream_parser_heartrate,
+#     'datastream_readiness': oura_datastream_parser_readiness,
+#     'datastream_daily_activity': oura_datastream_parser_daily_activity
 }
 
 
@@ -29,7 +32,7 @@ TOPIC_MAPPING = {
 }
 def send_datastream_to_personicle(personicle_user_id, records, stream_name, data_type, events_topic, limit = None):
     count = 0
-    record_formatter = RECORD_PROCESSING[f"{stream_name}_{data_type}"]
+    record_formatter = RECORD_PROCESSING[f"{stream_name}"]
     formatted_records = record_formatter(records, personicle_user_id,data_type)
     try:
         send_datastreams_to_azure.datastream_producer(formatted_records)
@@ -68,6 +71,8 @@ def send_records_to_personicle(personicle_user_id, records, stream_name, event_n
     # events_topic.set(json.dumps(formatted_records))
     try:
         send_records_azure.send_records_to_eventhub(None, formatted_records, os.environ['EVENTS_EVENTHUB_NAME'])
+        # send_records_azure.send_records_to_eventhub(None, formatted_records, "testhub-new")
+
 
         # print(formatted_records)
 

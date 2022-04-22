@@ -5,7 +5,7 @@ import logging
 from .oura_data_mapping import DATA_DICTIONARY
 LOG = logging.getLogger(__name__)
 
-
+#  met verify
 def oura_activity_parser_sleep(raw_event, personicle_user_id,event_name):
     """
     Format a sleep activity received from oura API to personicle event schema
@@ -21,7 +21,7 @@ def oura_activity_parser_sleep(raw_event, personicle_user_id,event_name):
     new_event_record['event_name'] = event_name
     new_event_record['source'] = 'oura'
     new_event_record['parameters'] = json.dumps({
-        "duration": duration,
+        "duration": duration*1000,
         "source_device": "oura",
         "period_id": raw_event['period_id'],
         "timezone": raw_event['timezone'],
@@ -59,19 +59,64 @@ def oura_activity_parser_sleep(raw_event, personicle_user_id,event_name):
     })
     return new_event_record
 
-def oura_datastream_parser_heartrate(raw_records, personicle_user_id,data_type):
-    return_message = {
-        "streamName": DATA_DICTIONARY[data_type],
-        "individual_id": personicle_user_id,
-        "source": "oura",
-        "unit": "bpm",
-        "dataPoints": []
-    }
+# def oura_datastream_parser_heartrate(raw_records, personicle_user_id,data_type):
+#     return_message = {
+#         "streamName": DATA_DICTIONARY[data_type],
+#         "individual_id": personicle_user_id,
+#         "source": "oura",
+#         "unit": "bpm",
+#         "dataPoints": []
+#     }
 
-    for point in raw_records:
-        return_message['dataPoints'].append({
-            "timestamp": point['timestamp'],
-            "value": point['bpm'],
-            "source": point['source']
+#     for point in raw_records:
+#         return_message['dataPoints'].append({
+#             "timestamp": point['timestamp'],
+#             "value": point['bpm'],
+#             "source": point['source']
+#         })
+#     return return_message
+
+def oura_datastream_parser(raw_records, personicle_user_id,data_type):
+   return_message_final = []
+   unit = "bpm" if data_type == "heartrate" else ""
+   if data_type=="heartrate":
+       unit = "bpm"
+   for metric,personicle_data_type in DATA_DICTIONARY[data_type].items():
+        return_message = {
+                "streamName": personicle_data_type,
+                "individual_id": personicle_user_id,
+                "source": "oura",
+                "unit": unit,
+                "dataPoints": []
+            }
+        for point in raw_records:
+            return_message['dataPoints'].append({
+             "timestamp": point.get('summary_date',None),
+             metric: point.get(metric,None),
         })
-    return return_message
+
+        return_message_final.append(return_message)
+#    print(return_message_final)
+   return return_message_final
+   
+    
+
+# def oura_datastream_parser_daily_activity(raw_records, personicle_user_id,data_type):
+#     return_message_final = []
+#     for metric,personicle_data_type in DATA_DICTIONARY[data_type].items():
+#         return_message = {
+#             "streamName": personicle_data_type,
+#             "individual_id": personicle_user_id,
+#             "source": "oura",
+#             "unit": "",
+#             "dataPoints": []
+#         }
+
+#         for point in raw_records:
+#             return_message['dataPoints'].append({
+#                 "timestamp": point.get('timestamp',None),
+#                 metric: point.get(metric,None),
+#             })
+#         return_message_final.append(return_message)
+
+#     return return_message_final
