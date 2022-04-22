@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import os
 import datetime
 
-DATABASE_URL = 'postgresql://{}:{}@{}/{}?sslmode={}'.format(os.environ['DB_CONFIG_USERNAME'], os.environ['DB_CONFIG_PASSWORD'],os.environ['DB_CONFIG_HOST'],os.environ['DB_CONFIG_NAME'], 'prefer')
+DATABASE_URL = 'postgresql://{}:{}@{}/{}?sslmode={}'.format(os.environ['DB_CONFIG_USERNAME'], os.environ['DB_CONFIG_PASSWORD'],os.environ['DB_CONFIG_HOST'],os.environ['CREDENTIALS_TABLENAME'], 'prefer')
 engine = sqlalchemy.create_engine(
     DATABASE_URL, pool_size=3, max_overflow=0
 )

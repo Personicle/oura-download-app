@@ -15,7 +15,8 @@ def oura_activity_import(personicle_user_id, access_token, last_accessed_at, eve
         start_time = datetime.now().date() - timedelta(days=365)
         end_time = datetime.now().date()
     else:
-        start_time = datetime.strptime(last_accessed_at, "%Y-%m-%d")
+        print(last_accessed_at)
+        start_time = datetime.strptime(last_accessed_at, "%Y-%m-%d %H:%M:%S.%f")
         end_time = datetime.now().date()
     
     repeat_token = None
