@@ -32,3 +32,4 @@ uamqp==1.5.3
 urllib3==1.26.9
 psycopg2-binary==2.9.3
 asyncpg
+azure-schemaregistry-avroserializer
